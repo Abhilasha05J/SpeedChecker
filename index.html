@@ -419,7 +419,7 @@
         class="pri">Send</button></form>
   </div>
   <script>
-    const API = (window.SPEEDCHECKER_API || "https://speedcheckereasy2promo.onrender.com/").replace(/\/$/, "");
+    const API = (window.SPEEDCHECKER_API || "https://speedcheckereasy2promo.onrender.com").replace(/\/$/, "");
     const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     let CAT = {}, SUP = {}, SORT = "fastest", CARDS = new Map(), PICK = new Set(), CTX = {};
     const hum = n => { for (const [d, s] of [[1e9, "B"], [1e6, "M"], [1e3, "k"]]) if (n >= d) return (+(n / d).toFixed(1)) + s; return Math.round(n) };
