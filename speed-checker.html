@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Speed Checker | EasytoPromo</title>
+  <style>
+    :root {
+      --bg: #f7f6fb;
+      --card: #fff;
+      --tx: #1d1b2e;
+      --mu: #6b6880;
+      --ac: #7c3aed;
+      --ac2: #ede9fe;
+      --bd: #e4e1f0;
+      --ok: #16a34a;
+      --wn: #b45309
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root {
+        --bg: #14121f;
+        --card: #1e1b2e;
+        --tx: #ece9f8;
+        --mu: #9b97b3;
+        --ac: #a78bfa;
+        --ac2: #2b2545;
+        --bd: #332e4d;
+        --ok: #4ade80;
+        --wn: #fbbf24
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--tx);
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif
+    }
+
+    .w {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 16px 90px
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 8px 0 2px
+    }
+
+    .sub {
+      color: var(--mu);
+      margin: 0 0 18px
+    }
+
+    .box {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .row>* {
+      flex: 1 1 150px
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+      color: var(--tx);
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 10px 12px
+    }
+
+    button {
+      cursor: pointer
+    }
+
+    .pri {
+      background: var(--ac);
+      border-color: var(--ac);
+      color: #fff;
+      font-weight: 600
+    }
+
+    .seg {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px
+    }
+
+    .seg button {
+      padding: 6px 12px;
+      border-radius: 20px
+    }
+
+    .seg button.on {
+      background: var(--ac2);
+      border-color: var(--ac);
+      color: var(--ac);
+      font-weight: 600
+    }
+
+    .seg label {
+      color: var(--mu);
+      font-size: 14px
+    }
+
+    .meta {
+      color: var(--mu);
+      font-size: 13px;
+      margin: 4px 2px 14px
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 20px 0 4px
+    }
+
+    .hint {
+      color: var(--mu);
+      font-size: 13px;
+      margin: 0 0 10px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 12px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .card.best {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 1px var(--ac)
+    }
+
+    .rk {
+      font-weight: 700;
+      color: var(--ac)
+    }
+
+    .nm {
+      font-size: 14px;
+      word-break: break-word
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 10px;
+      font-size: 14px
+    }
+
+    .kv span:nth-child(odd) {
+      color: var(--mu)
+    }
+
+    .note {
+      font-size: 12.5px;
+      color: var(--wn)
+    }
+
+    .why {
+      font-size: 12.5px;
+      color: var(--wn);
+      font-weight: 600
+    }
+
+    .acts {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: auto;
+      flex-wrap: wrap
+    }
+
+    .acts button {
+      padding: 6px 10px;
+      font-size: 13px
+    }
+
+    .acts label {
+      font-size: 13px;
+      color: var(--mu);
+      margin-left: auto
+    }
+
+    .nsl {
+      font-size: 13px;
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: var(--card)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px
+    }
+
+    td,
+    th {
+      border-bottom: 1px solid var(--bd);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top
+    }
+
+    th {
+      color: var(--mu);
+      font-weight: 600
+    }
+
+    .overflow {
+      overflow-x: auto
+    }
+
+    .empty {
+      padding: 22px;
+      text-align: center;
+      color: var(--mu)
+    }
+
+    #cmpbar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 16px;
+      background: var(--ac);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      display: none;
+      cursor: pointer;
+      z-index: 5;
+      font-weight: 600
+    }
+
+    #fab {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--ac);
+      color: #fff;
+      border: 0;
+      font-size: 24px;
+      z-index: 6;
+      box-shadow: 0 4px 14px #0004
+    }
+
+    #chat {
+      position: fixed;
+      right: 16px;
+      bottom: 84px;
+      width: min(380px, calc(100vw - 32px));
+      height: min(540px, calc(100vh - 110px));
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      display: none;
+      flex-direction: column;
+      z-index: 6;
+      box-shadow: 0 8px 30px #0005;
+      overflow: hidden
+    }
+
+    #chat.open {
+      display: flex
+    }
+
+    .ch {
+      background: var(--ac);
+      color: #fff;
+      padding: 12px 14px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between
+    }
+
+    #msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .m {
+      max-width: 90%;
+      padding: 8px 11px;
+      border-radius: 12px;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word
+    }
+
+    .m.b {
+      background: var(--ac2);
+      align-self: flex-start
+    }
+
+    .m.u {
+      background: var(--ac);
+      color: #fff;
+      align-self: flex-end
+    }
+
+    .m a {
+      color: inherit;
+      font-weight: 600
+    }
+
+    .q {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 0 12px 8px
+    }
+
+    .q button {
+      padding: 5px 10px;
+      border-radius: 16px;
+      font-size: 13px;
+      border-color: var(--ac);
+      color: var(--ac)
+    }
+
+    .cf {
+      display: flex;
+      gap: 6px;
+      padding: 10px;
+      border-top: 1px solid var(--bd)
+    }
+
+    .cf input {
+      flex: 1
+    }
+
+    .sup {
+      display: flex;
+      gap: 6px;
+      padding: 0 12px 10px
+    }
+
+    .sup a {
+      flex: 1;
+      text-align: center;
+      padding: 7px;
+      border-radius: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600
+    }
+  </style>
+</head>
+
+<body>
+  <div class="w">
+    <h1>Speed Checker</h1>
+    <p class="sub">Find the fastest service for what you need. Ranked by speed, then by average completion time.</p>
+    <div class="box">
+      <div class="row"><input id="q" placeholder='Search, e.g. "fastest instagram likes 5k"'><button class="pri"
+          id="qgo" style="flex:0 0 110px">Search</button></div>
+      <div class="row" style="margin-top:12px"><select id="pl"></select><select id="ty"></select><input id="qty"
+          type="number" min="1" placeholder="Quantity (optional)"><button class="pri" id="go">Find fastest</button>
+      </div>
+      <div class="seg"><label>Sort:</label><button data-s="fastest" class="on">Fastest</button><button
+          data-s="value">Best value</button><button data-s="cheapest">Cheapest</button>
+        <label style="margin-left:10px"><input type="checkbox" id="nd"> Non-drop only</label><label><input
+            type="checkbox" id="rf"> Refill included</label>
+      </div>
+    </div>
+    <div class="meta" id="meta">Loading latest data... (the first load can take up to a minute)</div>
+    <div id="res"></div>
+  </div>
+  <div id="cmpbar"></div>
+  <button id="fab" aria-label="Open chat">💬</button>
+  <div id="chat">
+    <div class="ch"><span>Service assistant</span><span id="x" style="cursor:pointer">✕</span></div>
+    <div id="msgs"></div>
+    <div class="q" id="quick"></div>
+    <div class="sup" id="sup"></div>
+    <form class="cf" id="cf"><input id="ci" placeholder="Ask about a service..." autocomplete="off"><button
+        class="pri">Send</button></form>
+  </div>
+  <script>
+    const API = (window.SPEEDCHECKER_API || "https://speedcheckereasy2promo.onrender.com/").replace(/\/$/, "");
+    const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    let CAT = {}, SUP = {}, SORT = "fastest", CARDS = new Map(), PICK = new Set(), CTX = {};
+    const hum = n => { for (const [d, s] of [[1e9, "B"], [1e6, "M"], [1e3, "k"]]) if (n >= d) return (+(n / d).toFixed(1)) + s; return Math.round(n) };
+    async function api(p, o) { const r = await fetch(API + p, o); if (!r.ok) throw new Error(r.status); return r.json() }
+    function ago(iso) { if (!iso) return ""; const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 6e4)); return m < 1 ? "just now" : m < 60 ? m + " min ago" : Math.round(m / 60) + " h ago" }
+    function fill(sel, arr, keep) { sel.innerHTML = arr.map(v => `<option>${esc(v)}</option>`).join(""); if (keep && arr.includes(keep)) sel.value = keep }
+    function types() { fill($("#ty"), (CAT[$("#pl").value] || []).filter(t => t != "Other")) }
+    async function init() {
+      try {
+        const d = await api("/api/catalogue"); CAT = d.catalogue; SUP = d.support;
+        fill($("#pl"), Object.keys(CAT).filter(p => p != "Other")); $("#pl").value = CAT.Instagram ? "Instagram" : $("#pl").value; types();
+        $("#meta").textContent = `Data updated ${ago(d.updated_at)} · ${d.count.toLocaleString()} services`; run()
+      }
+      catch (e) { $("#meta").textContent = "Could not load data. Please try again in a moment." }
+    }
+    function card(c, i, why) {
+      CARDS.set(c.id, c); const n = c.notes.filter(x => x != why).map(x => `<div class="note">${esc(x)}</div>`).join("");
+      return `<div class="card${i === 0 && !why ? " best" : ""}">${why ? `<div class="why">${esc(why)}</div>` : `<div class="rk">#${i + 1}</div>`}<div class="nm">${esc(c.name)}</div>
+ <div class="kv"><span>Speed</span><span>~${hum(c.speed_per_day)}/day</span><span>Avg time</span><span>${esc(c.avg_time_text) || "Not available yet"}</span>
+ <span>Rate / 1000</span><span>$${c.rate}</span><span>Min – Max</span><span>${c.min.toLocaleString()} – ${c.max.toLocaleString()}</span>
+ ${c.estimated_price != null ? `<span>Est. price</span><span><b>$${c.estimated_price}</b></span>` : ""}</div>${n}
+ <div class="acts"><button onclick="cp(${c.id},this)">Copy ID ${c.id}</button><button onclick="ask(${c.id})">Ask support</button><label><input type="checkbox" ${PICK.has(c.id) ? "checked" : ""} onchange="pick(${c.id},this)"> Compare</label></div></div>`
+    }
+    async function run() {
+      const p = $("#pl").value, t = $("#ty").value, q = $("#qty").value; if (!p || !t) return; CARDS.clear(); $("#res").innerHTML = '<div class="empty">Finding the fastest services...</div>';
+      const u = new URLSearchParams({ platform: p, type: t, sort: SORT, non_drop: $("#nd").checked, refill: $("#rf").checked }); if (q) u.set("quantity", q);
+      try {
+        const r = await api("/api/rank?" + u); let h = "";
+        if (r.top.length) h += `<h2>Top ${r.top.length} ${esc(SORT === "fastest" ? "fastest" : SORT === "cheapest" ? "cheapest" : "best value")} · ${esc(p)} ${esc(t)}${q ? " for " + (+q).toLocaleString() : ""}</h2><p class="hint">Ranked by speed; if speeds are equal, the lower average time wins.</p><div class="grid">${r.top.map((c, i) => card(c, i)).join("")}</div>`;
+        else h += `<div class="empty">No services with a stated speed${q ? " fit that quantity" : ""}.</div>`;
+        if (r.also_try.length) h += `<h2>Also try, if the minimum quantity isn't an issue</h2><p class="hint">Fast services that don't match your quantity exactly.</p><div class="grid">${r.also_try.map(c => card(c, 0, c.notes[0])).join("")}</div>`;
+        if (r.no_speed_total) h += `<h2>Speed not stated (${r.no_speed_total})</h2><p class="hint">These services don't list a speed, so they can't be ranked.</p>${r.no_speed.map(c => `<div class="nsl"><b>#${c.id}</b> ${esc(c.name)}<br>$${c.rate}/1000 · min ${c.min.toLocaleString()} · avg time ${esc(c.avg_time_text) || "not available yet"}</div>`).join("")}`;
+        $("#res").innerHTML = h
+      } catch (e) { $("#res").innerHTML = '<div class="empty">Something went wrong. Please try again.</div>' }
+    }
+    function cp(id, b) { navigator.clipboard?.writeText(String(id)); b.textContent = "Copied ✓"; setTimeout(() => b.textContent = "Copy ID " + id, 1500) }
+    function wa(t) { return SUP.whatsapp ? SUP.whatsapp.replace(/text=.*$/, "text=" + encodeURIComponent(t)) : "#" }
+    function ask(id) { window.open(wa("Hi, I have a question about service ID " + id), "_blank") }
+    function pick(id, el) { if (el.checked) { if (PICK.size >= 3) { el.checked = false; return } PICK.add(id) } else PICK.delete(id); const b = $("#cmpbar"); b.style.display = PICK.size > 1 ? "block" : "none"; b.textContent = `Compare ${PICK.size} services` }
+    $("#cmpbar").onclick = () => {
+      const cs = [...PICK].map(i => CARDS.get(i)).filter(Boolean); if (cs.length < 2) return; const row = (l, f) => `<tr><th>${l}</th>${cs.map(c => `<td>${f(c)}</td>`).join("")}</tr>`;
+      $("#res").insertAdjacentHTML("afterbegin", `<div class="box overflow" id="cmp"><h2 style="margin-top:0">Comparison <button onclick="this.closest('#cmp').remove()" style="float:right;padding:2px 8px">✕</button></h2><table>${row("ID", c => c.id)}${row("Service", c => esc(c.name))}${row("Speed", c => "~" + hum(c.speed_per_day) + "/day")}${row("Avg time", c => esc(c.avg_time_text) || "n/a")}${row("Rate / 1000", c => "$" + c.rate)}${row("Min – Max", c => c.min.toLocaleString() + " – " + c.max.toLocaleString())}${row("Est. price", c => c.estimated_price != null ? "$" + c.estimated_price : "-")}</table></div>`); scrollTo({ top: 0, behavior: "smooth" })
+    };
+    $("#pl").onchange = () => { types(); run() }; $("#ty").onchange = run; $("#go").onclick = run; $("#nd").onchange = $("#rf").onchange = run; $("#qty").onkeydown = e => { if (e.key === "Enter") run() };
+    document.querySelectorAll(".seg [data-s]").forEach(b => b.onclick = () => { SORT = b.dataset.s; document.querySelectorAll(".seg [data-s]").forEach(x => x.classList.toggle("on", x === b)); run() });
+    async function search() {
+      const q = $("#q").value.trim(); if (!q) return; try {
+        const r = await api("/api/resolve?q=" + encodeURIComponent(q));
+        if (r.platform && CAT[r.platform]) { $("#pl").value = r.platform; types(); if (r.type) $("#ty").value = r.type }
+        if (r.quantity) $("#qty").value = r.quantity; if (r.sort) { SORT = r.sort; document.querySelectorAll(".seg [data-s]").forEach(x => x.classList.toggle("on", x.dataset.s === SORT)) }
+        $("#nd").checked = r.non_drop; $("#rf").checked = r.refill; run()
+      } catch (e) { }
+    }
+    $("#qgo").onclick = search; $("#q").onkeydown = e => { if (e.key === "Enter") search() };
+    /* chatbot */
+    function say(t, c) { const d = document.createElement("div"); d.className = "m " + c; d.innerHTML = t; $("#msgs").appendChild(d); $("#msgs").scrollTop = 1e9 }
+    function quick(a) { $("#quick").innerHTML = (a || []).map(t => `<button>${esc(t)}</button>`).join(""); $("#quick").querySelectorAll("button").forEach(b => b.onclick = () => send(b.textContent)) }
+    async function send(t) {
+      say(esc(t), "u"); quick([]); $("#sup").innerHTML = "";
+      try {
+        const r = await api("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: t, ctx: CTX }) }); CTX = r.ctx || {};
+        let h = esc(r.reply); if (r.cards.length) h += "\n\n" + r.cards.map((c, i) => `${i + 1}. #${c.id} · ~${hum(c.speed_per_day)}/day · ${esc(c.avg_time_text) || "no avg time yet"} · $${c.rate}/1000`).join("\n");
+        say(h, "b"); quick(r.quick); if (r.support) $("#sup").innerHTML = `<a style="background:#16a34a" target="_blank" href="${wa("Hi, I need help with a service")}">WhatsApp</a><a style="background:#229ed9" target="_blank" href="${esc(r.support.telegram)}">Telegram</a>`
+      }
+      catch (e) { say("Sorry, I can't reach the server right now. You can contact support instead.", "b"); $("#sup").innerHTML = `<a style="background:#16a34a" target="_blank" href="${wa("Hi, I need help")}">WhatsApp</a><a style="background:#229ed9" target="_blank" href="${esc(SUP.telegram || "#")}">Telegram</a>` }
+    }
+    $("#fab").onclick = () => { $("#chat").classList.toggle("open"); if (!$("#msgs").children.length) { say("Hi! Ask me for the fastest, cheapest or best-value service, e.g. \"fastest Instagram likes\". I only answer from the services list.", "b"); quick(["Instagram Likes", "YouTube Views", "TikTok Followers", "Talk to support"]) } };
+    $("#x").onclick = () => $("#chat").classList.remove("open");
+    $("#cf").onsubmit = e => { e.preventDefault(); const v = $("#ci").value.trim(); if (v) { $("#ci").value = ""; send(v) } };
+    init();
+  </script>
+</body>
+
+</html>
