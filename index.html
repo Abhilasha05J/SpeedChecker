@@ -386,6 +386,25 @@
       font-size: 13px;
       font-weight: 600
     }
+
+    .chip {
+      background: var(--ac2);
+      border: 1px solid var(--ac);
+      color: var(--ac);
+      border-radius: 16px;
+      padding: 3px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      text-transform: capitalize
+    }
+
+    .warn {
+      background: var(--ac2);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13.5px;
+      margin-bottom: 10px
+    }
   </style>
 </head>
 
@@ -404,6 +423,9 @@
         <label style="margin-left:10px"><input type="checkbox" id="nd"> Non-drop only</label><label><input
             type="checkbox" id="rf"> Refill included</label>
       </div>
+      <div class="seg"><label>Targeting:</label><select id="tg">
+          <option value="">Any</option>
+        </select><span id="chips"></span></div>
     </div>
     <div class="meta" id="meta">Loading latest data... (the first load can take up to a minute)</div>
     <div id="res"></div>
@@ -421,12 +443,24 @@
   <script>
     const API = (window.SPEEDCHECKER_API || "https://speedcheckereasy2promo.onrender.com").replace(/\/$/, "");
     const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-    let CAT = {}, SUP = {}, SORT = "fastest", CARDS = new Map(), PICK = new Set(), CTX = {};
+    let CAT = {}, SUP = {}, SORT = "fastest", CARDS = new Map(), PICK = new Set(), CTX = {}, KW = [];
     const hum = n => { for (const [d, s] of [[1e9, "B"], [1e6, "M"], [1e3, "k"]]) if (n >= d) return (+(n / d).toFixed(1)) + s; return Math.round(n) };
     async function api(p, o) { const r = await fetch(API + p, o); if (!r.ok) throw new Error(r.status); return r.json() }
     function ago(iso) { if (!iso) return ""; const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 6e4)); return m < 1 ? "just now" : m < 60 ? m + " min ago" : Math.round(m / 60) + " h ago" }
     function fill(sel, arr, keep) { sel.innerHTML = arr.map(v => `<option>${esc(v)}</option>`).join(""); if (keep && arr.includes(keep)) sel.value = keep }
-    function types() { fill($("#ty"), (CAT[$("#pl").value] || []).filter(t => t != "Other")) }
+    function types() { fill($("#ty"), (CAT[$("#pl").value] || []).filter(t => t != "Other")); KW = []; chips(); tags() }
+    async function tags() {
+      try {
+        const d = await api("/api/tags?" + new URLSearchParams({ platform: $("#pl").value, type: $("#ty").value }));
+        $("#tg").innerHTML = '<option value="">Any</option>' + d.tags.map(t => `<option value="${esc(t.tag)}">${esc(t.label)} (${t.count})</option>`).join(""); chips()
+      } catch (e) { }
+    }
+    function chips() {
+      $("#chips").innerHTML = KW.map(k => `<span class="chip" title="Remove filter" onclick="setKW([])">${esc(k)} ✕</span>`).join(" ");
+      const o = [...$("#tg").options].find(x => KW.length === 1 && x.value === KW[0]); $("#tg").value = o ? o.value : ""
+    }
+    function setKW(a) { KW = a; chips(); run() }
+    function banner(r, p, t) { return r.keyword_fallback ? `<div class="warn">No exact match for “${esc(KW.join(" "))}”. Showing all ${esc(p)} ${esc(t)}.</div>` : r.keywords_unmatched.length ? `<div class="warn">Ignored “${esc(r.keywords_unmatched.join(" "))}”: no matching services.</div>` : "" }
     async function init() {
       try {
         const d = await api("/api/catalogue"); CAT = d.catalogue; SUP = d.support;
@@ -445,14 +479,14 @@
     }
     async function run() {
       const p = $("#pl").value, t = $("#ty").value, q = $("#qty").value; if (!p || !t) return; CARDS.clear(); $("#res").innerHTML = '<div class="empty">Finding the fastest services...</div>';
-      const u = new URLSearchParams({ platform: p, type: t, sort: SORT, non_drop: $("#nd").checked, refill: $("#rf").checked }); if (q) u.set("quantity", q);
+      const u = new URLSearchParams({ platform: p, type: t, sort: SORT, non_drop: $("#nd").checked, refill: $("#rf").checked }); if (q) u.set("quantity", q); if (KW.length) u.set("keywords", KW.join(" "));
       try {
-        const r = await api("/api/rank?" + u); let h = "";
-        if (r.top.length) h += `<h2>Top ${r.top.length} ${esc(SORT === "fastest" ? "fastest" : SORT === "cheapest" ? "cheapest" : "best value")} · ${esc(p)} ${esc(t)}${q ? " for " + (+q).toLocaleString() : ""}</h2><p class="hint">Ranked by speed; if speeds are equal, the lower average time wins.</p><div class="grid">${r.top.map((c, i) => card(c, i)).join("")}</div>`;
+        const r = await api("/api/rank?" + u); let h = banner(r, p, t);
+        if (r.top.length) h += `<h2>Top ${r.top.length} ${esc(SORT === "fastest" ? "fastest" : SORT === "cheapest" ? "cheapest" : "best value")} · ${esc(p)} ${esc(t)}${KW.length && !r.keyword_fallback ? " · " + esc(KW.join(" ")) : ""}${q ? " for " + (+q).toLocaleString() : ""}</h2><p class="hint">Ranked by speed; if speeds are equal, the lower average time wins.</p><div class="grid">${r.top.map((c, i) => card(c, i)).join("")}</div>`;
         else h += `<div class="empty">No services with a stated speed${q ? " fit that quantity" : ""}.</div>`;
         if (r.also_try.length) h += `<h2>Also try, if the minimum quantity isn't an issue</h2><p class="hint">Fast services that don't match your quantity exactly.</p><div class="grid">${r.also_try.map(c => card(c, 0, c.notes[0])).join("")}</div>`;
         if (r.no_speed_total) h += `<h2>Speed not stated (${r.no_speed_total})</h2><p class="hint">These services don't list a speed, so they can't be ranked.</p>${r.no_speed.map(c => `<div class="nsl"><b>#${c.id}</b> ${esc(c.name)}<br>$${c.rate}/1000 · min ${c.min.toLocaleString()} · avg time ${esc(c.avg_time_text) || "not available yet"}</div>`).join("")}`;
-        $("#res").innerHTML = h
+        $("#res").innerHTML = h; if (!r.keyword_fallback && r.keywords.length && r.keywords.join() !== KW.join()) { KW = r.keywords; chips() }
       } catch (e) { $("#res").innerHTML = '<div class="empty">Something went wrong. Please try again.</div>' }
     }
     function cp(id, b) { navigator.clipboard?.writeText(String(id)); b.textContent = "Copied ✓"; setTimeout(() => b.textContent = "Copy ID " + id, 1500) }
@@ -463,12 +497,12 @@
       const cs = [...PICK].map(i => CARDS.get(i)).filter(Boolean); if (cs.length < 2) return; const row = (l, f) => `<tr><th>${l}</th>${cs.map(c => `<td>${f(c)}</td>`).join("")}</tr>`;
       $("#res").insertAdjacentHTML("afterbegin", `<div class="box overflow" id="cmp"><h2 style="margin-top:0">Comparison <button onclick="this.closest('#cmp').remove()" style="float:right;padding:2px 8px">✕</button></h2><table>${row("ID", c => c.id)}${row("Service", c => esc(c.name))}${row("Speed", c => "~" + hum(c.speed_per_day) + "/day")}${row("Avg time", c => esc(c.avg_time_text) || "n/a")}${row("Rate / 1000", c => "$" + c.rate)}${row("Min – Max", c => c.min.toLocaleString() + " – " + c.max.toLocaleString())}${row("Est. price", c => c.estimated_price != null ? "$" + c.estimated_price : "-")}</table></div>`); scrollTo({ top: 0, behavior: "smooth" })
     };
-    $("#pl").onchange = () => { types(); run() }; $("#ty").onchange = run; $("#go").onclick = run; $("#nd").onchange = $("#rf").onchange = run; $("#qty").onkeydown = e => { if (e.key === "Enter") run() };
+    $("#pl").onchange = () => { types(); run() }; $("#ty").onchange = () => { KW = []; chips(); tags(); run() }; $("#tg").onchange = () => setKW($("#tg").value ? [$("#tg").value] : []); $("#go").onclick = run; $("#nd").onchange = $("#rf").onchange = run; $("#qty").onkeydown = e => { if (e.key === "Enter") run() };
     document.querySelectorAll(".seg [data-s]").forEach(b => b.onclick = () => { SORT = b.dataset.s; document.querySelectorAll(".seg [data-s]").forEach(x => x.classList.toggle("on", x === b)); run() });
     async function search() {
       const q = $("#q").value.trim(); if (!q) return; try {
         const r = await api("/api/resolve?q=" + encodeURIComponent(q));
-        if (r.platform && CAT[r.platform]) { $("#pl").value = r.platform; types(); if (r.type) $("#ty").value = r.type }
+        if (r.platform && CAT[r.platform]) { $("#pl").value = r.platform; types(); if (r.type) $("#ty").value = r.type } KW = r.keywords || []; chips(); tags();
         if (r.quantity) $("#qty").value = r.quantity; if (r.sort) { SORT = r.sort; document.querySelectorAll(".seg [data-s]").forEach(x => x.classList.toggle("on", x.dataset.s === SORT)) }
         $("#nd").checked = r.non_drop; $("#rf").checked = r.refill; run()
       } catch (e) { }
